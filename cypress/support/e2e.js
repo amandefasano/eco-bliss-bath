@@ -13,6 +13,9 @@
 // https://on.cypress.io/configuration
 // ***********************************************************
 
+// Import localstorage-commands
+import "cypress-localstorage-commands";
+
 // Import commands.js using ES2015 syntax:
 import './commands'
 

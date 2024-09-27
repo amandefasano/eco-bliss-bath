@@ -6,7 +6,7 @@ const apiAddProductUrl = `${Cypress.env("apiUrl")}/orders/add`;
 const apiOrdersUrl = `${Cypress.env("apiUrl")}/orders`;
 
 describe("test API /orders", () => {
-  beforeEach(function () {
+  before(function () {
     // Registering a new random user
     const randomEmail = faker.internet.email();
     const randomFirstName = faker.person.firstName();
@@ -15,7 +15,7 @@ describe("test API /orders", () => {
     const pwd = randomPwd;
     const randomAddress = faker.location.streetAddress();
     const randomCity = faker.location.city();
-
+  
     cy.request({
       method: "POST",
       url: apiRegisterUrl,
@@ -31,43 +31,45 @@ describe("test API /orders", () => {
     }).then(function (response) {
       cy.wrap(response.body.email).as("username");
       cy.wrap(response.body.plainPassword).as("password");
-
-      // logging in the user
-      cy.request({
-        method: "POST",
-        url: apiLoginUrl,
-        headers: {
-          accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: {
-          username: response.body.email,
-          password: response.body.plainPassword,
-        },
-      }).then(function (response) {
-        cy.wrap(response.body.token).as("token");
-
-        // Putting a product in the cart
-        cy.request({
-          method: "PUT",
-          url: apiAddProductUrl,
-          headers: {
-            Authorization: `Bearer ${response.body.token}`,
-          },
-          body: {
-            product: 3,
-            quantity: 1,
-          },
-        }).then(function (response) {
-          cy.wrap(response.body.orderLines[0].id).as("id");
-        });
-      });
     });
-
+  
     cy.wrap(randomFirstName).as("randomFirstName");
     cy.wrap(randomLastName).as("randomLastName");
     cy.wrap(randomAddress).as("randomAddress");
     cy.wrap(randomCity).as("randomCity");
+  });
+  
+  beforeEach(function () {
+    // logging in the user
+    cy.request({
+      method: "POST",
+      url: apiLoginUrl,
+      headers: {
+        accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: {
+        username: this.username,
+        password: this.password,
+      },
+    }).then((response) => {
+      cy.wrap(response.body.token).as("token");
+
+      // Putting a product in the cart
+    cy.request({
+      method: "PUT",
+      url: apiAddProductUrl,
+      headers: {
+        Authorization: `Bearer ${response.body.token}`,
+      },
+      body: {
+        product: 3,
+        quantity: 1,
+      },
+    }).then(function (response) {
+      cy.wrap(response.body.orderLines[0].id).as("id");
+    });
+    });
   });
 
   it("GET /orders: is getting the connected user's cart", function () {
@@ -104,7 +106,7 @@ describe("test API /orders", () => {
     });
   });
 
-  it("POST /orders/add: is adding a product in the cart", function () {
+  it("POST /orders/add: is adding an available product in the cart", function () {
     cy.request({
       method: "PUT",
       url: apiAddProductUrl,
@@ -183,7 +185,7 @@ describe("negative scenarios", () => {
     });
   });
 
-  it("is trying to get a newly registered user's empty cart: expects error 404", function () {
+  beforeEach(function () {
     // logging in the user
     cy.request({
       method: "POST",
@@ -194,24 +196,27 @@ describe("negative scenarios", () => {
       },
       body: {
         username: this.username,
-        password: this.password,
+        password: this.password
       },
     }).then((response) => {
-      // Getting the user's cart
-      cy.request({
-        method: "GET",
-        url: apiOrdersUrl,
-        failOnStatusCode: false,
-        headers: {
-          Authorization: `Bearer ${response.body.token}`,
-        },
-      }).then((response) => {
-        expect(response.status).to.eq(404);
-      });
+      cy.wrap(response.body.token).as("token");
     });
   });
 
-  it("is trying to get a non connected user's cart: expects error 403", () => {
+  it("is trying to get a newly registered user's empty cart: expects error 404", function () {
+    cy.request({
+      method: "GET",
+      url: apiOrdersUrl,
+      failOnStatusCode: false,
+      headers: {
+        Authorization: `Bearer ${this.token}`,
+      },
+    }).then((response) => {
+      expect(response.status).to.eq(404);
+    });
+  });
+
+  it("is trying to get a non logged in user's cart: expects error 403", () => {
     cy.request({
       method: "GET",
       url: apiOrdersUrl,
@@ -220,4 +225,6 @@ describe("negative scenarios", () => {
       expect(response.status).to.eq(403);
     });
   });
+
+  // it("is trying to add an unavailable product in the cart", function () {});
 });

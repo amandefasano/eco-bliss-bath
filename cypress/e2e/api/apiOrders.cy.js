@@ -2,6 +2,7 @@ import { faker } from "@faker-js/faker";
 
 const apiRegisterUrl = `${Cypress.env("apiUrl")}/register`;
 const apiLoginUrl = `${Cypress.env("apiUrl")}/login`;
+const apiProductsUrl = `${Cypress.env("apiUrl")}/products`;
 const apiAddProductUrl = `${Cypress.env("apiUrl")}/orders/add`;
 const apiOrdersUrl = `${Cypress.env("apiUrl")}/orders`;
 
@@ -15,7 +16,7 @@ describe("test API /orders", () => {
     const pwd = randomPwd;
     const randomAddress = faker.location.streetAddress();
     const randomCity = faker.location.city();
-  
+
     cy.request({
       method: "POST",
       url: apiRegisterUrl,
@@ -32,13 +33,13 @@ describe("test API /orders", () => {
       cy.wrap(response.body.email).as("username");
       cy.wrap(response.body.plainPassword).as("password");
     });
-  
+
     cy.wrap(randomFirstName).as("randomFirstName");
     cy.wrap(randomLastName).as("randomLastName");
     cy.wrap(randomAddress).as("randomAddress");
     cy.wrap(randomCity).as("randomCity");
   });
-  
+
   beforeEach(function () {
     // logging in the user
     cy.request({
@@ -56,19 +57,19 @@ describe("test API /orders", () => {
       cy.wrap(response.body.token).as("token");
 
       // Putting a product in the cart
-    cy.request({
-      method: "PUT",
-      url: apiAddProductUrl,
-      headers: {
-        Authorization: `Bearer ${response.body.token}`,
-      },
-      body: {
-        product: 3,
-        quantity: 1,
-      },
-    }).then(function (response) {
-      cy.wrap(response.body.orderLines[0].id).as("id");
-    });
+      cy.request({
+        method: "PUT",
+        url: apiAddProductUrl,
+        headers: {
+          Authorization: `Bearer ${response.body.token}`,
+        },
+        body: {
+          product: 3,
+          quantity: 1,
+        },
+      }).then(function (response) {
+        cy.wrap(response.body.orderLines[0].id).as("id");
+      });
     });
   });
 
@@ -196,7 +197,7 @@ describe("negative scenarios", () => {
       },
       body: {
         username: this.username,
-        password: this.password
+        password: this.password,
       },
     }).then((response) => {
       cy.wrap(response.body.token).as("token");
@@ -226,5 +227,50 @@ describe("negative scenarios", () => {
     });
   });
 
-  // it("is trying to add an unavailable product in the cart", function () {});
+  it("is trying to add an out of stock product in the cart", function () {
+    // setting the product out of stock
+    cy.intercept("GET", "/products/3", (req) => {
+      req.reply({
+        statusCode: 200,
+        body: {
+          // message: "Go kill yourself!!!!!!!!!!!!"
+          id: 3,
+          name: "Sentiments printaniers",
+          availableStock: 0,
+          skin: "Propre, fraîche",
+          aromas: "Frais et fruité",
+          ingredients: "Framboise, zeste de citron et feuille de menthe",
+          description:
+            "Savon avec une formule douce à base d’huile de framboise, de citron et de menthe qui nettoie les mains efficacement sans les dessécher.",
+          price: 60,
+          picture:
+            "https://cdn.pixabay.com/photo/2020/02/08/10/35/soap-4829708_960_720.jpg",
+          varieties: 4,
+        },
+      });
+    }).as("getProduct");
+
+    cy.request("GET", "@getProduct").then((res) => {
+      console.log(res.body);
+    });
+
+    cy.wait("@getProduct").then(function () {
+      cy.request({
+        method: "PUT",
+        url: apiAddProductUrl,
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+        },
+        body: {
+          product: 3,
+          quantity: 1,
+        },
+      }).then((response) => {
+        expect(response.status).to.eq(404);
+        expect(response.body)
+          .to.have.property("message")
+          .to.deep.equal("Produit en rupture de stock.");
+      });
+    });
+  });
 });

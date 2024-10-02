@@ -1,0 +1,12 @@
+{
+  "id": 9999999999,
+  "name": "Air de néant",
+  "availableStock": 0,
+  "skin": "Peau fine",
+  "aromas": "Void",
+  "ingredients": "Fragments d'astéroïdes",
+  "description": "Un savon léger pour oublier tous vos soucis.",
+  "price": 1,
+  "picture": "https://upload.wikimedia.org/wikipedia/commons/9/9b/Handmade_soap_cropped_and_simplified.jpg",
+  "varieties": 6
+}

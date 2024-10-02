@@ -25,5 +25,19 @@
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
 
 Cypress.Commands.add("getBySel", (selector, ...args) => {
-    return cy.get(`[data-cy=${selector}]`, ...args);
-    });
+  return cy.get(`[data-cy=${selector}]`, ...args);
+});
+
+Cypress.Commands.add("simulate_login", (username, password) => {
+  cy.request({
+    method: "POST",
+    url: `${Cypress.env("apiUrl")}/login`,
+    body: {
+      username: username,
+      password: password,
+    },
+  }).then(function (response) {
+    window.localStorage.setItem("token", response.body.token);
+    Cypress.env("token", response.body.token);
+  });
+});

@@ -9,6 +9,8 @@ module.exports = defineConfig({
     env: {
       baseUrl: "http://localhost:8080/#",
       apiUrl: "http://localhost:8081",
+      userEmail: "testApi@test.fr",
+      userPassword: "testApi"
     },
   },
 });

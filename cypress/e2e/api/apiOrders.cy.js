@@ -50,12 +50,12 @@ describe("test API /orders", () => {
       expect(response.body).to.have.property("id").to.be.a("number");
       expect(response.body).to.have.property("orderLines");
       expect(response.body).to.have.nested.property('orderLines[0].id').to.be.a("number");
-      expect(response.body).to.have.nested.property('orderLines[0].product');
+      expect(response.body).to.have.nested.property('orderLines[0].product.id', 3).to.be.a("number");
       expect(response.body).to.have.nested.property('orderLines[0].quantity').to.be.a("number");
     });
   });
 
-  it("POST /orders/add: is adding an available product in the cart", function () {
+  it("PUT /orders/add: is adding an available product in the cart", function () {
     cy.request({
       method: "PUT",
       url: apiAddProductUrl,
@@ -68,12 +68,15 @@ describe("test API /orders", () => {
       },
     }).then((response) => {
       expect(response.status).to.eq(200);
+      expect(response.body).to.have.property("id").to.be.a("number");
       expect(response.body).to.have.property("orderLines");
+      expect(response.body).to.have.nested.property('orderLines[1].id').to.be.a("number");
+      expect(response.body).to.have.nested.property('orderLines[1].product.id', 5).to.be.a("number");
+      expect(response.body).to.have.nested.property('orderLines[1].quantity').to.be.a("number");
     });
   });
 
   it("PUT /orders/{id}/change-quantity: is modifying the quantity", function () {
-    // cy.get("@id").then(function (id) {
     cy.request({
       method: "PUT",
       url: `${apiOrdersUrl}/${this.id}/change-quantity`,
@@ -85,13 +88,15 @@ describe("test API /orders", () => {
       },
     }).then((response) => {
       expect(response.status).to.eq(200);
+      expect(response.body).to.have.property("id").to.be.a("number");
       expect(response.body).to.have.property("orderLines");
+      expect(response.body).to.have.nested.property('orderLines[0].id').to.be.a("number");
+      expect(response.body).to.have.nested.property('orderLines[0].product.id', 3).to.be.a("number");
+      expect(response.body).to.have.nested.property('orderLines[0].quantity', 2).to.be.a("number");
     });
-    // });
   });
 
   it("DELETE /{id}/delete: is removing a product from the cart", function () {
-    // cy.get("@id").then(function (id) {
     cy.request({
       method: "DELETE",
       url: `${apiOrdersUrl}/${this.id}/delete`,
@@ -100,9 +105,11 @@ describe("test API /orders", () => {
       },
     }).then((response) => {
       expect(response.status).to.eq(200);
+      expect(response.body).to.have.property("id").to.be.a("number");
+      expect(response.body).to.have.property("orderLines");
+      expect(response.body).to.have.nested.property('orderLines[0].id').to.not.eq(this.id);
       expect(response.body).to.have.property("orderLines").to.have.length(1);
     });
-    // });
   });
 
   it("POST /orders: is sending an order", function () {
@@ -116,12 +123,23 @@ describe("test API /orders", () => {
         firstname: this.randomFirstName,
         lastname: this.randomLastName,
         address: this.randomAddress,
-        zipCode: 13008,
+        zipCode: "13008",
         city: this.randomCity,
       },
     }).then((response) => {
       expect(response.status).to.eq(200);
+      expect(response.body).to.have.property("id").to.be.a("number");
+      expect(response.body).to.have.property("firstname").to.deep.eq(this.randomFirstName).to.be.a("string");
+      expect(response.body).to.have.property("lastname").to.deep.eq(this.randomLastName).to.be.a("string");
+      expect(response.body).to.have.property("address").to.deep.eq(this.randomAddress).to.be.a("string");
+      expect(response.body).to.have.property("zipCode").to.deep.eq("13008").to.be.a("string");
+      expect(response.body).to.have.property("city").to.deep.eq(this.randomCity).to.be.a("string");
+      expect(response.body).to.have.property("date").that.satisfies((value) => !isNaN(Date.parse(value)));
+      expect(response.body).to.have.property("validated").to.be.true;
       expect(response.body).to.have.property("orderLines");
+      expect(response.body).to.have.nested.property('orderLines[0].id').to.be.a("number");
+      expect(response.body).to.have.nested.property('orderLines[0].product.id', 5).to.be.a("number");
+      expect(response.body).to.have.nested.property('orderLines[0].quantity').to.be.a("number");
     });
   });
 });
@@ -178,7 +196,7 @@ describe("negative scenarios", () => {
     });
   });
 
-  it("is trying to add an out of stock product in the cart", function () {
+  it("is trying to add an out of stock product in the cart: expects error 404", function () {
     cy.request({
       method: "PUT",
       url: apiAddProductUrl,

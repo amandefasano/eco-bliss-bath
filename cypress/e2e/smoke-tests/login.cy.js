@@ -1,5 +1,5 @@
 describe("smoke test: login", () => {
-  it("it check the presence of login's buttons and fields", () => {
+  it("is checking the presence of login's buttons and fields", () => {
     cy.visit("/");
     cy.getBySel("nav-link-login").should("exist").click();
 

@@ -13,10 +13,14 @@ describe("login functional tests", () => {
 
     // Redirection to the home page
     cy.wait("@postLogin");
+
+    // Expect the token to be stored in the local storage
     cy.window().then((window) => {
       const token = window.localStorage.getItem("user");
       expect(token).to.exist;
     });
+
+    // Expect the nav links to contain "Mon panier"
     cy.getBySel("nav-link-cart")
       .should("exist")
       .should("contain", "Mon panier");

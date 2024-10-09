@@ -1,4 +1,5 @@
 const productsUrl = `${Cypress.env("baseUrl")}/products`;
+const homePage = Cypress.env("baseUrl");
 
 describe("smoke tests: cart", () => {
   it("A 'add to the cart' button is present on the product information sheet when connected", () => {
@@ -23,7 +24,7 @@ describe("smoke tests: cart", () => {
   });
 
   it("The disponibility field is present on the product information sheet", () => {
-    cy.visit("/");
+    cy.visit(homePage);
 
     // Redirection to the product page
     cy.getBySel("nav-link-products").click();

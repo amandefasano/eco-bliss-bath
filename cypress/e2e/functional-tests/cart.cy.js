@@ -1,5 +1,9 @@
 const productsUrl = `${Cypress.env("baseUrl")}/products`;
 const product3Url = `${Cypress.env("baseUrl")}/products/3`;
+const apiProduct3Url = `${Cypress.env("apiUrl")}/products/3`;
+const apiAddProductUrl = `${Cypress.env("apiUrl")}/orders/add`;
+const apiOrdersUrl = `${Cypress.env("apiUrl")}/orders`;
+const cartUrl = `${Cypress.env("baseUrl")}/cart`;
 
 describe("cart functional tests", () => {
   beforeEach(function () {
@@ -12,7 +16,7 @@ describe("cart functional tests", () => {
   });
 
   it("cannot add the product in the cart when its stock amount is inferior to 1", function () {
-    cy.intercept("/products/3", {
+    cy.intercept(apiProduct3Url, {
       statusCode: 200,
       body: {
         id: 3,
@@ -42,21 +46,24 @@ describe("cart functional tests", () => {
     cy.wait("@outOfStockProduct3").then(function () {
       // Expect "out of stock" message and button "add to cart" disabled
       cy.getBySel("detail-product-add").should("be.disabled");
-      cy.getBySel("detail-product-stock").should("have.text", "En rupture de stock");
-    })
+      cy.getBySel("detail-product-stock").should(
+        "have.text",
+        "En rupture de stock"
+      );
+    });
   });
 
-  it("is adding one product 3 in the cart", function () {
+  it("An order line with the added product is created in the cart", function () {
     cy.visit(productsUrl);
 
     /*// Targetting the first product and clicking on the "consult" button //*/
-    cy.intercept("/products/3").as("product3");
+    cy.intercept(apiProduct3Url).as("product3");
     cy.get('.list-products > [data-cy="product"]')
       .eq(0)
       .find('[data-cy="product-link"]')
       .click();
 
-    // Storing the product 3 initial stock amount
+    /*// Storing the product 3 initial stock amount //*/
     cy.wait("@product3").then(function () {
       cy.getBySel("detail-product-stock")
         .invoke("text")
@@ -77,18 +84,18 @@ describe("cart functional tests", () => {
       .should("have.text", "Sentiments printaniers");
   });
 
-  it("is checking that the product 3 stock amount has decreased by one", function () {
+  it("The added product stock amount has decreased by one", function () {
     // Redirection to the product information sheet page
-    // Expecting the stock amount to have decreased by one
     cy.visit(productsUrl);
 
     /*// Targetting the first product and clicking on the "consult" button //*/
-    cy.intercept("/products/3").as("product3");
+    cy.intercept(apiProduct3Url).as("product3");
     cy.get('.list-products > [data-cy="product"]')
       .eq(0)
       .find('[data-cy="product-link"]')
       .click();
 
+    // Expecting the stock amount to have decreased by one
     cy.wait("@product3").then(function () {
       cy.getBySel("detail-product-stock")
         .invoke("text")
@@ -100,38 +107,75 @@ describe("cart functional tests", () => {
     });
   });
 
+  it("The product has been added in the cart (API call)", () => {
+    cy.intercept(apiProduct3Url).as("product3");
+    cy.visit(product3Url);
+    cy.intercept(apiAddProductUrl).as("addProduct");
+
+    cy.wait("@product3").then(function () {
+      cy.getBySel("detail-product-add").click();
+      cy.wait("@addProduct").then((interception) => {
+        const responseBody = interception.response.body;
+        expect(responseBody.orderLines).to.have.length.at.least(1);
+        expect(responseBody.orderLines[0])
+          .to.have.nested.property("product.id", 3)
+          .that.is.a("number");
+      });
+    });
+  });
+
+  it("The stock amount of the removed from the cart product has recovered initial state", function () {
+    cy.intercept(apiOrdersUrl).as("orders");
+    cy.visit(cartUrl);
+
+    cy.wait("@orders").then(function (interception) {
+      const orderLineId = interception.response.body.orderLines[0].id;
+      cy.intercept(`/orders/${orderLineId}/delete`).as("deleteProduct");
+      cy.getBySel("cart-line-delete").click();
+    });
+
+    cy.wait("@deleteProduct").then(function () {
+      cy.visit(productsUrl);
+
+    /*// Targetting the first product and clicking on the "consult" button //*/
+    cy.intercept(apiProduct3Url).as("product3");
+    cy.get('.list-products > [data-cy="product"]')
+      .eq(0)
+      .find('[data-cy="product-link"]')
+      .click();
+    });
+
+    // Expecting the stock amount to have decreased by one
+    cy.wait("@product3").then(function () {
+      cy.getBySel("detail-product-stock")
+        .invoke("text")
+        .then(function ($stockText) {
+          const updatedStockAmount = parseInt($stockText);
+
+          expect(updatedStockAmount).to.eq(this.initialStockAmount);
+        });
+    });
+  })
+
   it("cannot add less than 0 product in the cart", function () {
     cy.visit(product3Url);
 
-    cy.getBySel("detail-product-quantity").type("-1");
-    cy.getBySel("detail-product-add").click();
-  })
+    cy.getBySel("detail-product-quantity")
+      .should("have.value", 1)
+      .should("have.class", "ng-valid")
+      .clear()
+      .type("-1")
+      .should("have.class", "ng-invalid");
+  });
+
+  it("cannot add more than 20 products in the cart", function () {
+    cy.visit(product3Url);
+
+    cy.getBySel("detail-product-quantity")
+      .should("have.value", 1)
+      .should("have.class", "ng-valid")
+      .clear()
+      .type("21")
+      .should("have.class", "ng-invalid");
+  });
 });
-
-/*// Storing the order line id //*/
-// cy.wait("@addProduct").then(function (response) {
-//   cy.wrap(response.body.orderLines[0].id).as("orderLineId");
-// });
-
-// .then(function (product3stockAmount) {
-//   product3stockAmount = "1 en stock";
-// });
-
-/*// Storing the product 3 initial stock amount //*/
-// cy.wait("@product3").then(function () {});
-
-// Setting the product 3 initial stock amount to 1 and storing it
-// cy.visit(product3Url);
-
-// cy.getBySel("detail-product-stock").invoke("text", "1 en stock");
-
-// cy.getBySel("detail-product-stock")
-//   .invoke("text")
-//   .then(function (stockText) {
-//     const stockAmount = parseInt(stockText);
-
-//     cy.wrap(stockAmount)
-//       .as("initialStockAmount")
-//       .should("be.a", "number")
-//       .should("equal", 1);
-//   });

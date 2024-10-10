@@ -145,7 +145,7 @@ describe("cart functional tests", () => {
       .click();
     });
 
-    // Expecting the stock amount to have decreased by one
+    // Expecting the stock amount to have recovered initial state
     cy.wait("@product3").then(function () {
       cy.getBySel("detail-product-stock")
         .invoke("text")

@@ -293,7 +293,7 @@ describe("negative scenarios", () => {
         expect(response.status).to.eq(404);
         expect(response.body)
           .to.have.property("message")
-          .to.deep.equal("Produit en rupture de stock.");
+          .to.deep.equal("En rupture de stock.");
       });
     });
   });

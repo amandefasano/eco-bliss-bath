@@ -64,7 +64,7 @@ describe("test API end-points for user registration and getting user's info", ()
     });
   });
 
-  it("GET /me: is getting information on the connected user", function () {
+  it("GET /me: is getting information on the logged in user", function () {
     // Logging in the user
     cy.simulate_login(this.email, this.password).then(() => {
       const token = Cypress.env("token");

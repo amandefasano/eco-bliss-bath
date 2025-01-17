@@ -6,10 +6,7 @@ describe("test API /reviews", () => {
     cy.simulate_login(
       Cypress.env("userEmail"),
       Cypress.env("userPassword")
-    ).then(() => {
-      const token = Cypress.env("token");
-      cy.wrap(token).as("token");
-    });
+    );
   });
 
   it("GET /reviews: is getting all the reviews", function () {
@@ -65,7 +62,7 @@ describe("test API /reviews", () => {
       method: "POST",
       url: apiReviewsUrl,
       headers: {
-        Authorization: `Bearer ${this.token}`,
+        Authorization: `Bearer ${Cypress.env("token")}`,
       },
       body: {
         title: "Bons produits",

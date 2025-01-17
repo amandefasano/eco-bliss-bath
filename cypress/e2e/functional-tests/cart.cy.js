@@ -8,11 +8,7 @@ const cartUrl = `${Cypress.env("baseUrl")}/cart`;
 describe("cart functional tests", () => {
   beforeEach(function () {
     // Logging in the user
-    cy.simulate_login("test2@test.fr", "testtest").then(() => {
-      cy.window().then((window) => {
-        window.localStorage.setItem("user", `${Cypress.env("token")}`);
-      });
-    });
+    cy.simulate_login("test2@test.fr", "testtest");
   });
 
   it("cannot add the product in the cart when its stock amount is inferior to 1", function () {

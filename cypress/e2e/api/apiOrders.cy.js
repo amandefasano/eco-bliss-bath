@@ -13,15 +13,12 @@ describe("tests API /orders", () => {
       Cypress.env("userEmail"),
       Cypress.env("userPassword")
     ).then(() => {
-      const token = Cypress.env("token");
-      cy.wrap(token).as("token");
-
       // Adding a product in the cart
       cy.request({
         method: "PUT",
         url: apiAddProductUrl,
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${Cypress.env("token")}`,
         },
         body: {
           product: 3,
@@ -45,7 +42,7 @@ describe("tests API /orders", () => {
       url: apiOrdersUrl,
       failOnStatusCode: false,
       headers: {
-        Authorization: `Bearer ${this.token}`,
+        Authorization: `Bearer ${Cypress.env("token")}`,
       },
     }).then((response) => {
       expect(response.status).to.eq(200);
@@ -71,7 +68,7 @@ describe("tests API /orders", () => {
       method: "PUT",
       url: apiAddProductUrl,
       headers: {
-        Authorization: `Bearer ${this.token}`,
+        Authorization: `Bearer ${Cypress.env("token")}`,
       },
       body: {
         product: 5,
@@ -98,7 +95,7 @@ describe("tests API /orders", () => {
       method: "PUT",
       url: `${apiOrdersUrl}/${this.id}/change-quantity`,
       headers: {
-        Authorization: `Bearer ${this.token}`,
+        Authorization: `Bearer ${Cypress.env("token")}`,
       },
       body: {
         quantity: 2,
@@ -124,7 +121,7 @@ describe("tests API /orders", () => {
       method: "DELETE",
       url: `${apiOrdersUrl}/${this.id}/delete`,
       headers: {
-        Authorization: `Bearer ${this.token}`,
+        Authorization: `Bearer ${Cypress.env("token")}`,
       },
     }).then((response) => {
       expect(response.status).to.eq(200);
@@ -142,7 +139,7 @@ describe("tests API /orders", () => {
       method: "POST",
       url: apiOrdersUrl,
       headers: {
-        Authorization: `Bearer ${this.token}`,
+        Authorization: `Bearer ${Cypress.env("token")}`,
       },
       body: {
         firstname: this.randomFirstName,
@@ -219,8 +216,8 @@ describe("negative scenarios", () => {
     }).then(function (response) {
       // logging in the user
       cy.simulate_login(response.body.email, response.body.plainPassword).then(
-        function () {
-          cy.wrap(Cypress.env("token")).as("token");
+        function (response) {
+          cy.wrap(response.body.token).as("token");
         }
       );
     });

@@ -1,13 +1,10 @@
 const productsUrl = `${Cypress.env("baseUrl")}/products`;
-const homePage = Cypress.env("baseUrl");
+const homePageUrl = Cypress.env("baseUrl");
 
 describe("smoke tests: cart", () => {
   it("A 'add to the cart' button is present on the product information sheet when connected", () => {
     // Logging in the user
-    cy.simulate_login("test2@test.fr", "testtest").then(() => {
-      const token = Cypress.env("token");
-      cy.wrap(token).as("token");
-    });
+    cy.simulate_login("test2@test.fr", "testtest");
 
     cy.visit(productsUrl);
     cy.getBySel("product").find('[data-cy="product-link"]').should("exist");
@@ -24,7 +21,7 @@ describe("smoke tests: cart", () => {
   });
 
   it("The disponibility field is present on the product information sheet", () => {
-    cy.visit(homePage);
+    cy.visit(homePageUrl);
 
     // Redirection to the product page
     cy.getBySel("nav-link-products").click();

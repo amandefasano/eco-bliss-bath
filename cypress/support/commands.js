@@ -37,7 +37,7 @@ Cypress.Commands.add("simulate_login", (username, password) => {
       password: password,
     },
   }).then(function (response) {
-    window.localStorage.setItem("token", response.body.token);
+    window.localStorage.setItem("user", response.body.token);
     Cypress.env("token", response.body.token);
   });
 });

@@ -1,8 +1,8 @@
-const homePage = Cypress.env("baseUrl");
+const homePageUrl = Cypress.env("baseUrl");
 
 describe("smoke test: login", () => {
   it("Login's buttons and fields are present on the header and the login page", () => {
-    cy.visit(homePage);
+    cy.visit(homePageUrl);
     cy.getBySel("nav-link-login").should("exist").should("be.visible").click();
 
     // Redirection to the login page

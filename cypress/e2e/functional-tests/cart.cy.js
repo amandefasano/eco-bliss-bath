@@ -54,10 +54,10 @@ describe("cart functional tests", () => {
   });
 
   it("An order line with the added product is created in the cart", function () {
+    cy.intercept(apiProduct3Url).as("product3");
     cy.visit(productsUrl);
 
     /*// Targetting the first product and clicking on the "consult" button //*/
-    cy.intercept(apiProduct3Url).as("product3");
     cy.get('.list-products > [data-cy="product"]')
       .eq(0)
       .find('[data-cy="product-link"]')
@@ -66,6 +66,7 @@ describe("cart functional tests", () => {
     /*// Storing the product 3 initial stock amount //*/
     cy.wait("@product3").then(function () {
       cy.getBySel("detail-product-stock")
+        .wait(1000)
         .invoke("text")
         .then(function (stockText) {
           cy.wrap(parseInt(stockText))
@@ -98,6 +99,7 @@ describe("cart functional tests", () => {
     // Expecting the stock amount to have decreased by one
     cy.wait("@product3").then(function () {
       cy.getBySel("detail-product-stock")
+        .wait(1000)
         .invoke("text")
         .then(function ($stockText) {
           const updatedStockAmount = parseInt($stockText);
@@ -135,19 +137,20 @@ describe("cart functional tests", () => {
     });
 
     cy.wait("@deleteProduct").then(function () {
+      cy.intercept(apiProduct3Url).as("product3");
       cy.visit(productsUrl);
 
-    /*// Targetting the first product and clicking on the "consult" button //*/
-    cy.intercept(apiProduct3Url).as("product3");
-    cy.get('.list-products > [data-cy="product"]')
-      .eq(0)
-      .find('[data-cy="product-link"]')
-      .click();
+      /*// Targetting the first product and clicking on the "consult" button //*/
+      cy.get('.list-products > [data-cy="product"]')
+        .eq(0)
+        .find('[data-cy="product-link"]')
+        .click();
     });
 
     // Expecting the stock amount to have recovered initial state
     cy.wait("@product3").then(function () {
       cy.getBySel("detail-product-stock")
+        .wait(1000)
         .invoke("text")
         .then(function ($stockText) {
           const updatedStockAmount = parseInt($stockText);
@@ -155,7 +158,7 @@ describe("cart functional tests", () => {
           expect(updatedStockAmount).to.eq(this.initialStockAmount);
         });
     });
-  })
+  });
 
   it("cannot add less than 0 product in the cart", function () {
     cy.visit(product3Url);

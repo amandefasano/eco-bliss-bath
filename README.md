@@ -31,9 +31,9 @@ npm install cypress --save-dev 
 ### En avant Guingamp ! 
 - Pour ouvrir l'interface de Cypress, tapez dans le terminal
 ```bash
-npx Cypress open
+npx cypress open
 ```
 - Pour exécuter l'ensemble des tests et générer un rapport, tapez dans le terminal
 ```bash
-npx Cypress run
+npx cypress run
 ```

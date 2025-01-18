@@ -6,8 +6,8 @@ describe("login functional tests", () => {
     cy.getBySel("nav-link-login").click();
 
     // Redirection to the login page
-    cy.getBySel("login-input-username").type("test2@test.fr");
-    cy.getBySel("login-input-password").type("testtest");
+    cy.getBySel("login-input-username").type(`${Cypress.env("funcEmail")}`);
+    cy.getBySel("login-input-password").type(`${Cypress.env("funcPassword")}`);
     cy.intercept("POST", "/login").as("postLogin");
     cy.getBySel("login-submit").click();
 

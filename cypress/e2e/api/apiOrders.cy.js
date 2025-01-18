@@ -10,8 +10,8 @@ describe("tests API /orders", () => {
   before(function () {
     // Logging in a user
     cy.simulate_login(
-      Cypress.env("userEmail"),
-      Cypress.env("userPassword")
+      Cypress.env("apiEmail"),
+      Cypress.env("apiPassword")
     ).then(() => {
       // Adding a product in the cart
       cy.request({
@@ -48,18 +48,14 @@ describe("tests API /orders", () => {
       expect(response.status).to.eq(200);
       expect(response.body).to.have.property("id").that.is.a("number");
       expect(response.body).to.have.property("orderLines");
-      
+
       response.body.orderLines.forEach((orderLine) => {
+        expect(orderLine).to.have.property("id").to.be.a("number");
         expect(orderLine)
-        .to.have.property("id")
-        .to.be.a("number");
-      expect(orderLine)
-        .to.have.nested.property("product.id")
-        .to.be.a("number");
-      expect(orderLine)
-        .to.have.property("quantity")
-        .to.be.a("number");
-      })
+          .to.have.nested.property("product.id")
+          .to.be.a("number");
+        expect(orderLine).to.have.property("quantity").to.be.a("number");
+      });
     });
   });
 
@@ -178,16 +174,12 @@ describe("tests API /orders", () => {
       expect(response.body).to.have.property("orderLines");
 
       response.body.orderLines.forEach((orderLine) => {
+        expect(orderLine).to.have.property("id").to.be.a("number");
         expect(orderLine)
-        .to.have.property("id")
-        .to.be.a("number");
-      expect(orderLine)
-        .to.have.nested.property("product.id")
-        .to.be.a("number");
-      expect(orderLine)
-        .to.have.property("quantity")
-        .to.be.a("number");
-      })
+          .to.have.nested.property("product.id")
+          .to.be.a("number");
+        expect(orderLine).to.have.property("quantity").to.be.a("number");
+      });
     });
   });
 });
@@ -274,24 +266,24 @@ describe("negative scenarios", () => {
       .click();
 
     // Redirection to the product information sheet
-    cy.wait("@outOfStockProduct3").then(function () {
-      cy.request({
-        method: "PUT",
-        url: apiAddProductUrl,
-        headers: {
-          Authorization: `Bearer ${this.token}`,
-        },
-        body: {
-          product: 3,
-          quantity: 1,
-        },
-        failOnStatusCode: false,
-      }).then((response) => {
-        expect(response.status).to.eq(404);
-        expect(response.body)
-          .to.have.property("message")
-          .to.deep.equal("En rupture de stock.");
-      });
+    cy.wait("@outOfStockProduct3");
+    
+    cy.request({
+      method: "PUT",
+      url: apiAddProductUrl,
+      headers: {
+        Authorization: `Bearer ${this.token}`,
+      },
+      body: {
+        product: 3,
+        quantity: 1,
+      },
+      failOnStatusCode: false,
+    }).then((response) => {
+      expect(response.status).to.eq(404);
+      expect(response.body)
+        .to.have.property("message")
+        .to.deep.equal("En rupture de stock.");
     });
   });
 });

@@ -10,8 +10,8 @@ describe("test API /login", () => {
         "Content-Type": "application/json",
       },
       body: {
-        username: `${Cypress.env("userEmail")}`,
-        password: `${Cypress.env("userPassword")}`,
+        username: `${Cypress.env("apiEmail")}`,
+        password: `${Cypress.env("apiPassword")}`,
       },
     }).then((response) => {
       expect(response.status).to.eq(200);

@@ -4,13 +4,13 @@ describe("test API /reviews", () => {
   before(function () {
     // Logging in a user
     cy.simulate_login(
-      Cypress.env("userEmail"),
-      Cypress.env("userPassword")
+      Cypress.env("apiEmail"),
+      Cypress.env("apiPassword")
     );
   });
 
   it("GET /reviews: is getting all the reviews", function () {
-    cy.request(apiReviewsUrl).should((response) => {
+    cy.request(apiReviewsUrl).then((response) => {
       // Check status and body structure
       expect(response.status).to.equal(200);
       expect(response.body).to.be.an("array");
@@ -97,15 +97,15 @@ describe("test API /reviews", () => {
       expect(response.body)
         .to.have.nested.property("author.email")
         .that.is.a("string")
-        .to.deep.eq(`${Cypress.env("userEmail")}`);
+        .to.deep.eq(`${Cypress.env("apiEmail")}`);
       expect(response.body)
         .to.have.nested.property("author.userIdentifier")
         .that.is.a("string")
-        .to.deep.eq(`${Cypress.env("userEmail")}`);
+        .to.deep.eq(`${Cypress.env("apiEmail")}`);
       expect(response.body)
         .to.have.nested.property("author.username")
         .that.is.a("string")
-        .to.deep.eq(`${Cypress.env("userEmail")}`);
+        .to.deep.eq(`${Cypress.env("apiEmail")}`);
       expect(response.body)
         .to.have.nested.property("author.roles")
         .that.is.an("array");

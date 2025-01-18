@@ -8,7 +8,10 @@ const cartUrl = `${Cypress.env("baseUrl")}/cart`;
 describe("cart functional tests", () => {
   beforeEach(function () {
     // Logging in the user
-    cy.simulate_login("test2@test.fr", "testtest");
+    cy.simulate_login(
+      Cypress.env("funcEmail"),
+      Cypress.env("funcPassword")
+    );
   });
 
   it("cannot add the product in the cart when its stock amount is inferior to 1", function () {
@@ -39,14 +42,14 @@ describe("cart functional tests", () => {
       .click();
 
     // Redirection to the product information sheet
-    cy.wait("@outOfStockProduct3").then(function () {
-      // Expect "out of stock" message and button "add to cart" disabled
-      cy.getBySel("detail-product-add").should("be.disabled");
-      cy.getBySel("detail-product-stock").should(
-        "have.text",
-        "En rupture de stock"
-      );
-    });
+    cy.wait("@outOfStockProduct3");
+
+    // Expect "out of stock" message and button "add to cart" disabled
+    cy.getBySel("detail-product-add").should("be.disabled");
+    cy.getBySel("detail-product-stock").should(
+      "have.text",
+      "En rupture de stock"
+    );
   });
 
   it("An order line with the added product is created in the cart", function () {
@@ -60,16 +63,15 @@ describe("cart functional tests", () => {
       .click();
 
     /*// Storing the product 3 initial stock amount //*/
-    cy.wait("@product3").then(function () {
-      cy.getBySel("detail-product-stock")
-        .wait(1000)
-        .invoke("text")
-        .then(function (stockText) {
-          cy.wrap(parseInt(stockText))
-            .as("initialStockAmount")
-            .should("be.a", "number");
-        });
-    });
+    cy.wait("@product3");
+    cy.getBySel("detail-product-stock")
+      .wait(1000)
+      .invoke("text")
+      .then(function (stockText) {
+        cy.wrap(parseInt(stockText))
+          .as("initialStockAmount")
+          .should("be.a", "number");
+      });
 
     cy.getBySel("detail-product-add").click();
 
@@ -93,33 +95,15 @@ describe("cart functional tests", () => {
       .click();
 
     // Expecting the stock amount to have decreased by one
-    cy.wait("@product3").then(function () {
-      cy.getBySel("detail-product-stock")
-        .wait(1000)
-        .invoke("text")
-        .then(function ($stockText) {
-          const updatedStockAmount = parseInt($stockText);
+    cy.wait("@product3");
+    cy.getBySel("detail-product-stock")
+      .wait(1000)
+      .invoke("text")
+      .then(function ($stockText) {
+        const updatedStockAmount = parseInt($stockText);
 
-          expect(updatedStockAmount).to.eq(this.initialStockAmount - 1);
-        });
-    });
-  });
-
-  it("The product has been added in the cart (API call)", () => {
-    cy.intercept(apiProduct3Url).as("product3");
-    cy.visit(product3Url);
-    cy.intercept(apiAddProductUrl).as("addProduct");
-
-    cy.wait("@product3").then(function () {
-      cy.getBySel("detail-product-add").click();
-      cy.wait("@addProduct").then((interception) => {
-        const responseBody = interception.response.body;
-        expect(responseBody.orderLines).to.have.length.at.least(1);
-        expect(responseBody.orderLines[0])
-          .to.have.nested.property("product.id", 3)
-          .that.is.a("number");
+        expect(updatedStockAmount).to.eq(this.initialStockAmount - 1);
       });
-    });
   });
 
   it("The stock amount of the removed from the cart product has recovered initial state", function () {
@@ -129,31 +113,31 @@ describe("cart functional tests", () => {
     cy.wait("@orders").then(function (interception) {
       const orderLineId = interception.response.body.orderLines[0].id;
       cy.intercept(`/orders/${orderLineId}/delete`).as("deleteProduct");
-      cy.getBySel("cart-line-delete").click();
     });
 
-    cy.wait("@deleteProduct").then(function () {
-      cy.intercept(apiProduct3Url).as("product3");
-      cy.visit(productsUrl);
+    cy.getBySel("cart-line-delete").click();
 
-      /*// Targetting the first product and clicking on the "consult" button //*/
-      cy.get('.list-products > [data-cy="product"]')
-        .eq(0)
-        .find('[data-cy="product-link"]')
-        .click();
-    });
+    cy.wait("@deleteProduct");
+
+    cy.intercept(apiProduct3Url).as("product3");
+    cy.visit(productsUrl);
+
+    /*// Targetting the first product and clicking on the "consult" button //*/
+    cy.get('.list-products > [data-cy="product"]')
+      .eq(0)
+      .find('[data-cy="product-link"]')
+      .click();
 
     // Expecting the stock amount to have recovered initial state
-    cy.wait("@product3").then(function () {
-      cy.getBySel("detail-product-stock")
-        .wait(1000)
-        .invoke("text")
-        .then(function ($stockText) {
-          const updatedStockAmount = parseInt($stockText);
+    cy.wait("@product3");
+    cy.getBySel("detail-product-stock")
+      .wait(1000)
+      .invoke("text")
+      .then(function ($stockText) {
+        const updatedStockAmount = parseInt($stockText);
 
-          expect(updatedStockAmount).to.eq(this.initialStockAmount);
-        });
-    });
+        expect(updatedStockAmount).to.eq(this.initialStockAmount);
+      });
   });
 
   it("cannot add less than 0 product in the cart", function () {

@@ -48,7 +48,7 @@ describe("cart functional tests", () => {
     cy.getBySel("detail-product-add").should("be.disabled");
     cy.getBySel("detail-product-stock").should(
       "have.text",
-      "En rupture de stock"
+      "Actuellement indisponible"
     );
   });
 

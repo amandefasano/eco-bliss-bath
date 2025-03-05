@@ -2,7 +2,7 @@
 Project n°10 of the OpenClassrooms software testing's diploma course
 
 ## Description
-Eco Bliss Bath is a fictive start-up specialising in the sale of eco-responsible beauty products.\
+Eco Bliss Bath is a fictional start-up specialising in the sale of eco-responsible beauty products.\
 As their QA engineer, I was in charge of executing the validation campaign on their online shop first version.\
 My responsibilities were to automate functional and API tests using Cypress.\
 Then I had to execute the automated tests and analyse the results.\

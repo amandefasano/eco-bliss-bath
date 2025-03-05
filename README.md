@@ -46,7 +46,6 @@ npx cypress run
 1. Cypress file contaning all the automated tests
 2. Validation campaign report
 
-### Spoiler alert ⚠️
-OpenClassrooms is a French MOOC (Massive Open Online Course). The projects produced as part of their trainings are destined to be evaluated by French examiners.\
-For this reason, all the validation campaign report content is in French.\
-I apologize in advance for any inconvenience.
+### Notice ⚠️
+OpenClassrooms is a French institution. The projects produced as part of their trainings are destined to be evaluated by French examiners.\
+For this reason, all the validation campaign report content is in French.

@@ -6,7 +6,7 @@ Eco Bliss Bath is a fictional start-up specialising in the sale of eco-responsib
 As their QA engineer, I was in charge of executing the validation campaign on their online shop's first version.\
 My responsibilities were to automate functional and API tests using Cypress.\
 Then I had to execute the automated tests and analyse the results.\
-Eventually, I wrote the validation campaign report and presented it to an examiner.
+Finally, I wrote the validation campaign report and presented it to an examiner.
 
 ## Project's installation
 1. Download or clone the repository

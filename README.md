@@ -10,7 +10,7 @@ Eventually, I wrote the validation campaign report and presented it to an examin
 
 ## Project's installation
 1. Download or clone the repository
-2. From a terminal opened in the project folder, run the command : `sudo docker-compose up --build`
+2. From a terminal opened in the project folder, run the command : `docker compose up --build`
 3. Open the site in your browser: http://localhost:8080 
 
 ## Launching Cypress tests
